@@ -1,0 +1,76 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: "default-receiver"
+  group_by: ["alertname", "category"]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    - matchers:
+        - severity = "critical"
+      receiver: "critical-receiver"
+      group_wait: 10s
+      repeat_interval: 1h
+      continue: false
+    - matchers:
+        - severity = "warning"
+      receiver: "warning-receiver"
+      repeat_interval: 4h
+      continue: false
+    - matchers:
+        - severity = "info"
+      receiver: "info-receiver"
+      repeat_interval: 24h
+      continue: false
+
+receivers:
+  - name: "default-receiver"
+    webhook_configs:
+      - url: "http://localhost:5001/alerts"
+        send_resolved: true
+        max_alerts: 0
+
+  - name: "critical-receiver"
+    webhook_configs:
+      - url: "http://localhost:5001/alerts/critical"
+        send_resolved: true
+    # In production, replace webhook with Slack + PagerDuty:
+    # slack_configs:
+    #   - api_url: "https://hooks.slack.com/services/REPLACE/ME/NOW"
+    #     channel: "#ops-critical"
+    #     send_resolved: true
+    # pagerduty_configs:
+    #   - routing_key: "REPLACE_WITH_INTEGRATION_KEY"
+
+  - name: "warning-receiver"
+    webhook_configs:
+      - url: "http://localhost:5001/alerts/warning"
+        send_resolved: true
+    # slack_configs:
+    #   - api_url: "https://hooks.slack.com/services/REPLACE/ME/NOW"
+    #     channel: "#ops-warnings"
+    #     send_resolved: true
+
+  - name: "info-receiver"
+    webhook_configs:
+      - url: "http://localhost:5001/alerts/info"
+        send_resolved: false
+
+inhibit_rules:
+  - source_matchers:
+      - severity = "critical"
+    target_matchers:
+      - severity = "warning"
+    equal: ["category"]
+  - source_matchers:
+      - alertname = "InstanceDown"
+    target_matchers:
+      - category = "http"
+    equal: ["instance"]
+
+
+# Template for Slack-style messages (customizable per receiver)
+templates:
+  - "/etc/alertmanager/templates/*.tmpl"

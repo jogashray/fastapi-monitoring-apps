@@ -1,0 +1,53 @@
+groups:
+  - name: system_alerts
+    interval: 30s
+    rules:
+      - alert: HighCPUUsage
+        expr: rate(process_cpu_seconds_total[5m]) > 0.8
+        for: 2m
+        labels:
+          severity: warning
+          category: system
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU rate is {{ $value }} cores (>0.8) for more than 2 minutes."
+
+      - alert: HighMemoryUsage
+        expr: process_resident_memory_bytes > 500000000
+        for: 2m
+        labels:
+          severity: warning
+          category: system
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "RSS is {{ $value | humanize }}B (>500MB)."
+
+      - alert: InstanceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: availability
+        annotations:
+          summary: "Instance {{ $labels.instance }} is down"
+          description: "Prometheus cannot scrape the target for more than 1 minute."
+
+      - alert: FileDescriptorExhaustion
+        expr: process_open_fds / process_max_fds > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          category: system
+        annotations:
+          summary: "File descriptor usage > 80% on {{ $labels.instance }}"
+          description: "FD ratio is {{ $value | humanizePercentage }}."
+
+      - alert: ProcessThreadCountHigh
+        expr: process_threads > 200
+        for: 5m
+        labels:
+          severity: info
+          category: system
+        annotations:
+          summary: "Thread count elevated on {{ $labels.instance }}"
+          description: "{{ $value }} active threads."

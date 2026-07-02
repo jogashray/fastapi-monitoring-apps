@@ -1,0 +1,354 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Comprehensive FastAPI metrics overview — system + HTTP.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "uid": "fastapi-overview",
+  "title": "FastAPI Overview",
+  "tags": ["fastapi", "metrics", "monitoring"],
+  "timezone": "browser",
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "version": 1,
+  "time": {"from": "now-1h", "to": "now"},
+  "templating": {
+    "list": [
+      {
+        "name": "endpoint",
+        "label": "Endpoint",
+        "type": "query",
+        "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+        "query": "label_values(http_requests_total, endpoint)",
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true,
+        "current": {"selected": true, "text": "All", "value": "$__all"}
+      },
+      {
+        "name": "method",
+        "label": "HTTP Method",
+        "type": "query",
+        "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+        "query": "label_values(http_requests_total, method)",
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true,
+        "current": {"selected": true, "text": "All", "value": "$__all"}
+      },
+      {
+        "name": "status_code",
+        "label": "Status Code",
+        "type": "query",
+        "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+        "query": "label_values(http_requests_total, status_code)",
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true,
+        "current": {"selected": true, "text": "All", "value": "$__all"}
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "System Metrics",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "collapsed": false
+    },
+    {
+      "id": 2,
+      "title": "CPU Usage Rate (cores/s)",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 1},
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0}},
+      "targets": [
+        {
+          "expr": "rate(process_cpu_seconds_total[5m]) * 100",
+          "legendFormat": "CPU rate",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Resident Memory (RSS)",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 1},
+      "fieldConfig": {"defaults": {"unit": "bytes"}},
+      "targets": [
+        {
+          "expr": "process_resident_memory_bytes",
+          "legendFormat": "RSS",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Virtual Memory",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 9},
+      "fieldConfig": {"defaults": {"unit": "bytes"}},
+      "targets": [
+        {
+          "expr": "process_virtual_memory_bytes",
+          "legendFormat": "Virtual",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "File Descriptor Usage",
+      "type": "gauge",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 9},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 60},
+              {"color": "red", "value": 80}
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "process_open_fds / process_max_fds * 100",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Threads",
+      "type": "stat",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 4, "x": 16, "y": 9},
+      "fieldConfig": {"defaults": {"unit": "short"}},
+      "targets": [{"expr": "process_threads", "refId": "A"}]
+    },
+    {
+      "id": 7,
+      "title": "Uptime",
+      "type": "stat",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 4, "x": 20, "y": 9},
+      "fieldConfig": {"defaults": {"unit": "s"}},
+      "targets": [{"expr": "process_uptime_seconds", "refId": "A"}]
+    },
+    {
+      "id": 20,
+      "type": "row",
+      "title": "HTTP Volume",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 17},
+      "collapsed": false
+    },
+    {
+      "id": 21,
+      "title": "Request Rate (total)",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 18},
+      "fieldConfig": {"defaults": {"unit": "reqps"}},
+      "targets": [
+        {"expr": "sum(rate(http_requests_total{endpoint=~\"$endpoint\", method=~\"$method\"}[5m]))", "refId": "A"}
+      ]
+    },
+    {
+      "id": 22,
+      "title": "Request Rate by Endpoint",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 18},
+      "fieldConfig": {"defaults": {"unit": "reqps"}},
+      "targets": [
+        {
+          "expr": "sum by (endpoint) (rate(http_requests_total{endpoint=~\"$endpoint\", method=~\"$method\"}[5m]))",
+          "legendFormat": "{{endpoint}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "title": "Status Code Distribution",
+      "type": "piechart",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 26},
+      "targets": [
+        {
+          "expr": "sum by (status_code) (rate(http_requests_total{endpoint=~\"$endpoint\", method=~\"$method\"}[5m]))",
+          "legendFormat": "{{status_code}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "title": "Top 5 Endpoints by Traffic",
+      "type": "bargauge",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 26},
+      "fieldConfig": {"defaults": {"unit": "reqps"}},
+      "targets": [
+        {
+          "expr": "topk(5, sum by (endpoint) (rate(http_requests_total[5m])))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "title": "In-flight Requests",
+      "type": "stat",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 26},
+      "fieldConfig": {"defaults": {"unit": "short"}},
+      "targets": [{"expr": "sum(http_requests_in_progress)", "refId": "A"}]
+    },
+    {
+      "id": 30,
+      "type": "row",
+      "title": "HTTP Performance",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 34},
+      "collapsed": false
+    },
+    {
+      "id": 31,
+      "title": "p50 Latency by Endpoint",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 35},
+      "fieldConfig": {"defaults": {"unit": "s"}},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{endpoint=~\"$endpoint\", method=~\"$method\"}[5m])) by (le, endpoint))",
+          "legendFormat": "p50 {{endpoint}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "title": "p95 Latency by Endpoint",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 35},
+      "fieldConfig": {"defaults": {"unit": "s"}},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{endpoint=~\"$endpoint\", method=~\"$method\"}[5m])) by (le, endpoint))",
+          "legendFormat": "p95 {{endpoint}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "title": "p99 Latency by Endpoint",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 35},
+      "fieldConfig": {"defaults": {"unit": "s"}},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{endpoint=~\"$endpoint\", method=~\"$method\"}[5m])) by (le, endpoint))",
+          "legendFormat": "p99 {{endpoint}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "title": "Error Rate (5xx / total)",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 43},
+      "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0}},
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{status_code=~\"5..\", endpoint=~\"$endpoint\"}[5m])) / clamp_min(sum(rate(http_requests_total[5m])), 1)",
+          "legendFormat": "Error rate",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 35,
+      "title": "Average Request Duration",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 43},
+      "fieldConfig": {"defaults": {"unit": "s"}},
+      "targets": [
+        {
+          "expr": "sum(rate(http_request_duration_seconds_sum{endpoint=~\"$endpoint\", method=~\"$method\"}[5m])) by (endpoint) / clamp_min(sum(rate(http_request_duration_seconds_count{endpoint=~\"$endpoint\", method=~\"$method\"}[5m])) by (endpoint), 1)",
+          "legendFormat": "avg {{endpoint}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "type": "row",
+      "title": "HTTP Sizes",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 51},
+      "collapsed": false
+    },
+    {
+      "id": 41,
+      "title": "Request Size p95",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 52},
+      "fieldConfig": {"defaults": {"unit": "bytes"}},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_size_bytes_bucket{endpoint=~\"$endpoint\", method=~\"$method\"}[5m])) by (le, endpoint))",
+          "legendFormat": "req p95 {{endpoint}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 42,
+      "title": "Response Size p95",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 52},
+      "fieldConfig": {"defaults": {"unit": "bytes"}},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_response_size_bytes_bucket{endpoint=~\"$endpoint\", method=~\"$method\"}[5m])) by (le, endpoint))",
+          "legendFormat": "res p95 {{endpoint}}",
+          "refId": "A"
+        }
+      ]
+    }
+  ]
+}

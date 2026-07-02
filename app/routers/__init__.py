@@ -1,0 +1,1 @@
+"""Routers package — application and health endpoints."""

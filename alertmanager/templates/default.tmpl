@@ -1,0 +1,25 @@
+{{ define "slack.default.title" }}
+[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }} — {{ .CommonLabels.severity }}
+{{ end }}
+
+{{ define "slack.default.text" }}
+{{ range .Alerts }}
+*Alert:* {{ .Labels.alertname }}
+*Severity:* {{ .Labels.severity }}
+*Category:* {{ .Labels.category }}
+*Summary:* {{ .Annotations.summary }}
+*Description:* {{ .Annotations.description }}
+*Instance:* {{ .Labels.instance }}
+{{ end }}
+{{ end }}
+
+{{ define "email.default.subject" }}
+[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }} on {{ .CommonLabels.instance }}
+{{ end }}
+
+{{ define "email.default.html" }}
+<h2>{{ .CommonLabels.alertname }}</h2>
+<p><b>Status:</b> {{ .Status }}</p>
+<p><b>Severity:</b> {{ .CommonLabels.severity }}</p>
+<p>{{ .CommonAnnotations.description }}</p>
+{{ end }}

@@ -1,0 +1,141 @@
+# =============================================================
+# FastAPI Metrics Monitoring — .gitignore
+# =============================================================
+
+# Python
+# --------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+*.egg
+*.whl
+*.manifest
+*.spec
+.installed.cfg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.python-version
+.python-version.bak
+.python-version-isolated
+
+# Environment / secrets — NEVER commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+secrets/
+config/local.*
+
+# Testing / coverage
+# -------------------
+.pytest_cache/
+.coverage
+.coverage.*
+.cache
+coverage.xml
+*.cover
+htmlcov/
+.tox/
+.hypothesis/
+.mypy_cache/
+.ruff_cache/
+.pyright/
+.pyre/
+
+# IDEs & editors
+# --------------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.settings/
+.classpath
+*.iml
+*.iws
+*.ipr
+nbproject/
+nbbuild/
+nbdist/
+
+# OS
+# ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Logs & runtime artifacts
+# ------------------------
+*.log
+logs/
+*.pid
+*.seed
+*.pid.lock
+
+# Local data directories (in-memory store dumps, etc.)
+data/
+
+# Docker / runtime volumes — bind-mounts done in compose
+# (kept on disk for faster restarts; never source controlled)
+prometheus_data/
+grafana_data/
+alertmanager_data/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*.orig
+*~.nib
+*.rej
+
+# Jupyter / Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Coverage HTML report (alternative to xml above)
+.coverage-*
+
+# Tooling-specific
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Node (in case you add frontends later)
+node_modules/
+.npm
+.yarn
+.pnp.*

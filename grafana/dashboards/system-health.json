@@ -1,0 +1,134 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "uid": "system-health",
+  "title": "FastAPI System Health",
+  "tags": ["fastapi", "system"],
+  "timezone": "browser",
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "version": 1,
+  "time": {"from": "now-1h", "to": "now"},
+  "templating": {"list": []},
+  "panels": [
+    {
+      "id": 1,
+      "title": "Process Uptime",
+      "type": "stat",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
+      "fieldConfig": {"defaults": {"unit": "s"}},
+      "targets": [{"expr": "process_uptime_seconds", "refId": "A"}]
+    },
+    {
+      "id": 2,
+      "title": "Threads",
+      "type": "stat",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0},
+      "fieldConfig": {"defaults": {"unit": "short"}},
+      "targets": [{"expr": "process_threads", "refId": "A"}]
+    },
+    {
+      "id": 3,
+      "title": "CPU Count",
+      "type": "stat",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0},
+      "fieldConfig": {"defaults": {"unit": "short"}},
+      "targets": [{"expr": "process_num_cpu", "refId": "A"}]
+    },
+    {
+      "id": 4,
+      "title": "Process Start Time",
+      "type": "stat",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0},
+      "fieldConfig": {"defaults": {"unit": "dateTimeAsIso"}},
+      "targets": [{"expr": "process_start_time_seconds", "refId": "A"}]
+    },
+    {
+      "id": 5,
+      "title": "Memory Utilization",
+      "type": "gauge",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 6},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 60},
+              {"color": "red", "value": 80}
+            ]
+          }
+        }
+      },
+      "targets": [{"expr": "process_memory_utilization_percent", "refId": "A"}]
+    },
+    {
+      "id": 6,
+      "title": "File Descriptor %",
+      "type": "gauge",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 6},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 60},
+              {"color": "red", "value": 80}
+            ]
+          }
+        }
+      },
+      "targets": [{"expr": "process_open_fds / process_max_fds * 100", "refId": "A"}]
+    },
+    {
+      "id": 7,
+      "title": "CPU Utilization",
+      "type": "gauge",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 6},
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}},
+      "targets": [{"expr": "process_cpu_utilization_percent", "refId": "A"}]
+    },
+    {
+      "id": 8,
+      "title": "GC Collections (per generation)",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14},
+      "targets": [
+        {
+          "expr": "python_gc_collections_total",
+          "legendFormat": "gen {{generation}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "GC Objects Collected",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 14},
+      "targets": [
+        {
+          "expr": "python_gc_objects_collected_total",
+          "legendFormat": "gen {{generation}}",
+          "refId": "A"
+        }
+      ]
+    }
+  ]
+}

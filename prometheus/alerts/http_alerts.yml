@@ -1,0 +1,49 @@
+groups:
+  - name: http_alerts
+    interval: 30s
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{status_code=~"5.."}[5m]))
+          /
+          sum(rate(http_requests_total[5m])) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          category: http
+        annotations:
+          summary: "Error rate > 5% on {{ $labels.instance }}"
+          description: "{{ $value | humanizePercentage }} of requests are 5xx."
+
+      - alert: SlowRequests
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le, endpoint)
+          ) > 1
+        for: 5m
+        labels:
+          severity: warning
+          category: http
+        annotations:
+          summary: "p95 latency > 1s on {{ $labels.endpoint }}"
+          description: "p95 latency is {{ $value }}s."
+
+      - alert: HighTrafficSpike
+        expr: sum(rate(http_requests_total[1m])) > 100
+        for: 1m
+        labels:
+          severity: info
+          category: http
+        annotations:
+          summary: "Traffic spike on {{ $labels.instance }}"
+          description: "Sustained request rate {{ $value }} req/s."
+
+      - alert: NoTraffic
+        expr: sum(rate(http_requests_total[5m])) == 0
+        for: 10m
+        labels:
+          severity: warning
+          category: http
+        annotations:
+          summary: "No HTTP traffic on {{ $labels.instance }}"
+          description: "No requests observed for 10 minutes."
