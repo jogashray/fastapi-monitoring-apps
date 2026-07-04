@@ -76,6 +76,7 @@ This project implements comprehensive metrics monitoring for a FastAPI applicati
 - **Alertmanager** with severity-based routing (`critical`, `warning`, `info`), inhibition rules, and webhook receivers.
 - **Grafana dashboards** auto-provisioned on startup: `FastAPI Overview` (22 panels) and `FastAPI System Health` (9 panels), with template variables for `endpoint`, `method`, `status_code`.
 - **Smoke test script** (`scripts/smoke_test.sh`) for end-to-end verification.
+- **Traffic generator** (`scripts/generate_traffic.py`) for populating the Grafana dashboards with realistic distributions.
 - **Pytest suite** of 24 tests covering endpoints, HTTP metrics, and system metrics.
 
 ---
@@ -164,7 +165,8 @@ fastapi-metrics-app/
 │       └── system-health.json        # 9 panels  — system-only dashboard
 │
 ├── scripts/
-│   └── smoke_test.sh                 # End-to-end stack check
+│   ├── smoke_test.sh                 # End-to-end stack check
+│   └── generate_traffic.py           # Synthetic traffic generator for dashboards
 │
 ├── docker-compose.yml                # 4-service stack on `monitoring` network
 ├── Dockerfile                        # python:3.11-slim, uvicorn entrypoint
@@ -636,6 +638,38 @@ Both dashboards have **5-second refresh** and template variables for `endpoint`,
 2. **Graph** tab → enter a PromQL expression → click **Execute** → switch to **Graph** tab.
 3. **Alerts** tab shows rules and their state (`inactive`, `pending`, `firing`).
 4. **Status → Targets** shows whether Prometheus can scrape `app:8000`.
+
+## Generating Traffic for Demos
+
+A fresh stack has empty dashboards — Prometheus has only scraped a few requests from the smoke test. To populate the panels with realistic distributions (latency p50/p90/p95/p99, status-code mix, request/response size spread), use the included traffic generator.
+
+```bash
+# Default: 1500 requests, 4 workers, ~5% error rate
+make load
+
+# Override the count and concurrency
+make load COUNT=2000 CONCURRENCY=8
+
+# Or run directly with full options
+python3 scripts/generate_traffic.py --count 1500 --concurrency 4 --error-rate 0.05
+python3 scripts/generate_traffic.py --count 5000 --concurrency 12 --base-url http://localhost:8000
+python3 scripts/generate_traffic.py --seed 42   # reproducible traffic
+```
+
+### What it generates
+
+| Endpoint / pattern | Share | Purpose |
+|--------------------|-------|---------|
+| `GET /health` | 60% | Cheap requests for latency distributions |
+| `POST /data` (100 B – 10 KB payloads) | 25% | Fills the request-size histogram with varied payloads |
+| `GET /data` (± pagination) | 10% | Mixed query strings |
+| `GET /data/count` | 5% | Small, fast responses |
+| Invalid `POST /data` (returns 422) | ~5% × `error_rate` | Populates the 422 status-code series |
+| `GET /<unknown>` (returns 404) | ~5% × `error_rate` | Populates the 404 status-code series |
+
+The script reports a summary table at the end (status mix, latency percentiles, body-size spread). After it finishes, wait ~10 seconds for Prometheus to scrape and Grafana to refresh, then reopen the dashboards.
+
+This is **a data source for the dashboards, not a load test** — it does not assert throughput SLOs or p99 budgets. For those, use `k6` or `locust`.
 
 ---
 

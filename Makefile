@@ -1,4 +1,4 @@
-.PHONY: install run test up down logs smoke clean
+.PHONY: install run test up down logs smoke load clean
 
 install:
 	pip install -r requirements.txt
@@ -25,6 +25,12 @@ logs:
 
 smoke:
 	bash scripts/smoke_test.sh
+
+# Generate synthetic traffic to populate Grafana dashboards.
+# Defaults: 1500 mixed GET/POST requests with ~5% error rate.
+# Override:  make load COUNT=2000 CONCURRENCY=8
+load:
+	python3 scripts/generate_traffic.py --count $(or $(COUNT),1500) --concurrency $(or $(CONCURRENCY),4)
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
