@@ -231,11 +231,16 @@ git clone https://github.com/jogashray/fastapi-monitoring-apps.git
 cd fastapi-monitoring-apps
 
 # 2. Build images and start all 4 services
-docker-compose up -d --build
+#    Use whichever `compose` command is available on your device:
+docker compose up -d --build       # Modern Docker (post-2020, v2 plugin)
+# OR
+docker-compose up -d --build       # Older Docker Toolbox / v1 binary
 
 # 3. Check service health
-docker-compose ps
+docker compose ps                   # OR: docker-compose ps
 ```
+
+> If neither command is found, install [Docker Desktop](https://www.docker.com/products/docker-desktop/) or the `docker-compose-plugin` package.
 
 After ~30 seconds, the following URLs are live:
 
@@ -257,8 +262,8 @@ make smoke        # or: bash scripts/smoke_test.sh
 To stop and clean up:
 
 ```bash
-docker-compose down               # Stop, keep volumes
-docker-compose down -v            # Stop, remove volumes
+docker compose down               # OR: docker-compose down       — stop, keep volumes
+docker compose down -v            # OR: docker-compose down -v    — stop, remove volumes
 ```
 
 ---
@@ -716,7 +721,7 @@ The `scripts/smoke_test.sh` script performs a black-box end-to-end check against
 3. `GET /data` and asserts the payload is listed
 4. `GET /metrics` and asserts presence of `# HELP` lines and required metric names
 
-Run with: `make smoke` (after `docker-compose up -d`).
+Run with: `make smoke` (after `docker compose up -d` or `docker-compose up -d`).
 
 ---
 
@@ -761,15 +766,16 @@ This is a single-process monitoring example, **not a hardened production system*
 
 | Symptom | Likely Cause | Fix |
 |---------|--------------|-----|
-| `curl /health` returns 502/connection refused | App container not started | `docker-compose ps`, check logs: `docker-compose logs app` |
+| `bash: docker-compose: command not found` | Device only has Compose v2 (`docker compose`, no hyphen) | Use `docker compose ...` instead; or install the `docker-compose-plugin` |
+| `curl /health` returns 502/connection refused | App container not started | `docker compose ps` (or `docker-compose ps`), check logs: `docker compose logs app` |
 | `GET /metrics` is empty | Lifespan never started the collector | Restart the container; verify `SYSTEM_METRICS_INTERVAL` is valid |
 | Grafana shows "No data" | Prometheus not scraping | Open `:9090/targets`, ensure `app:8000` is `UP` |
 | Alert rules not in `/alerts` | Rule files not mounted | Check `docker-compose.yml` volumes; check Prometheus logs for `error parsing rule files` |
 | `POST /data` returns 422 | Body missing `payload` field or wrong type | Send `{"payload": {...}}`; `note` must be a string if present |
-| 500-series errors in `http_requests_total` | App exception in handler | Check app logs: `docker-compose logs -f app` |
+| 500-series errors in `http_requests_total` | App exception in handler | Check app logs: `docker compose logs -f app` (or `docker-compose logs -f app`) |
 | `ModuleNotFoundError: app` | Running tests from wrong directory | Run `pytest` from the project root |
 | Port 8000 already in use | Another process bound to 8000 | Edit `docker-compose.yml` ports to `8001:8000` |
-| `docker-compose up` hangs on prometheus | Volume permission issue | `docker-compose down -v && docker-compose up -d` |
+| `docker compose up` hangs on prometheus | Volume permission issue | `docker compose down -v && docker compose up -d` |
 | `process_open_fds` missing on macOS | macOS has no `RLIMIT_NOFILE` | Expected; not a bug, but the metric is unavailable on macOS Docker Desktop |
 | Test failures after `git pull` | Stale `__pycache__` | `find . -name __pycache__ -exec rm -rf {} +` |
 | `pytest` complains about `event_loop` fixture deprecation | Newer pytest-asyncio | Use `pytest-asyncio` ≥ 0.23; remove the custom `event_loop` fixture from `conftest.py` |
