@@ -251,6 +251,11 @@ After ~30 seconds, the following URLs are live:
 | Grafana | http://localhost:3000 | admin / admin |
 | Alertmanager | http://localhost:9093 | — |
 
+> If any of these host ports is already in use on your device (for example, a
+> system-installed Grafana on `:3000`), set the matching variable in `.env`
+> (e.g. `GRAFANA_PORT=3001`) **before** running `docker compose up`. See
+> [Configuration](#configuration) for the full list of overridable ports.
+
 The Grafana dashboards (`FastAPI Overview`, `FastAPI System Health`) and Prometheus datasource are auto-provisioned on startup.
 
 To verify the stack is functioning end-to-end:
@@ -295,6 +300,19 @@ export ENABLE_DEFAULT_METRICS=false
 # Slower system collector (10s) to reduce CPU on idle systems
 export SYSTEM_METRICS_INTERVAL=10
 ```
+
+### Docker Compose port overrides
+
+The host-side port bindings for the full stack are overridable. Set any of these in `.env` before running `docker compose up` if a default port is already in use on your device:
+
+| Variable | Default | Service |
+|----------|---------|---------|
+| `FASTAPI_PORT` | `8000` | FastAPI app |
+| `PROMETHEUS_PORT` | `9090` | Prometheus |
+| `ALERTMANAGER_PORT` | `9093` | Alertmanager |
+| `GRAFANA_PORT` | `3000` | Grafana |
+
+Example: if port 3000 is already in use (common when Grafana is installed system-wide), set `GRAFANA_PORT=3001` in `.env` and re-run `docker compose up -d`. Container-side ports stay fixed.
 
 ---
 
@@ -774,7 +792,8 @@ This is a single-process monitoring example, **not a hardened production system*
 | `POST /data` returns 422 | Body missing `payload` field or wrong type | Send `{"payload": {...}}`; `note` must be a string if present |
 | 500-series errors in `http_requests_total` | App exception in handler | Check app logs: `docker compose logs -f app` (or `docker-compose logs -f app`) |
 | `ModuleNotFoundError: app` | Running tests from wrong directory | Run `pytest` from the project root |
-| Port 8000 already in use | Another process bound to 8000 | Edit `docker-compose.yml` ports to `8001:8000` |
+| `bind: address already in use` for any of 8000 / 3000 / 9090 / 9093 | A previous run's leftover containers, or another system process holding the port | First: `docker compose down` to clean up. If still bound, find the culprit — `lsof -i :3000` (Linux/macOS) or `netstat -ano \| findstr :3000` (Windows). To remap without editing YAML: set the matching variable in `.env` (e.g. `GRAFANA_PORT=3001`) and re-run `docker compose up -d`. |
+| Stack fails to start mid-way (some containers `Exit 1`) | One container can't bind its port; another service depends on it | `docker compose ps` shows which service failed; `docker compose logs <service>` for details. Then `docker compose down` and remap the conflicting port in `.env`. |
 | `docker compose up` hangs on prometheus | Volume permission issue | `docker compose down -v && docker compose up -d` |
 | `process_open_fds` missing on macOS | macOS has no `RLIMIT_NOFILE` | Expected; not a bug, but the metric is unavailable on macOS Docker Desktop |
 | Test failures after `git pull` | Stale `__pycache__` | `find . -name __pycache__ -exec rm -rf {} +` |
