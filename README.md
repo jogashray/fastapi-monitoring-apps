@@ -643,6 +643,8 @@ Both dashboards have **5-second refresh** and template variables for `endpoint`,
 
 A fresh stack has empty dashboards — Prometheus has only scraped a few requests from the smoke test. To populate the panels with realistic distributions (latency p50/p90/p95/p99, status-code mix, request/response size spread), use the included traffic generator.
 
+`make load` runs the script **inside the FastAPI container** via `docker compose exec`, so you don't need `httpx` (or anything else) installed on the host. Works on any Docker-only setup.
+
 ```bash
 # Default: 1500 requests, 4 workers, ~5% error rate
 make load
@@ -650,10 +652,20 @@ make load
 # Override the count and concurrency
 make load COUNT=2000 CONCURRENCY=8
 
-# Or run directly with full options
+# Reproducible traffic (same payloads and order on every run)
+make load COUNT=2000 SEED=42      # (set the seed inside the container as well)
+```
+
+> **Note:** If you pulled these changes after the smoke-test fix, rebuild the
+> app image once so the script is bundled in: `docker compose up -d --build`.
+> After that, `make load` works without `--build`.
+
+If you'd rather run the script directly (e.g., from a venv with `pip install -r requirements.txt` already done), you can:
+
+```bash
 python3 scripts/generate_traffic.py --count 1500 --concurrency 4 --error-rate 0.05
 python3 scripts/generate_traffic.py --count 5000 --concurrency 12 --base-url http://localhost:8000
-python3 scripts/generate_traffic.py --seed 42   # reproducible traffic
+python3 scripts/generate_traffic.py --seed 42
 ```
 
 ### What it generates
@@ -828,6 +840,7 @@ This is a single-process monitoring example, **not a hardened production system*
 | `ModuleNotFoundError: app` | Running tests from wrong directory | Run `pytest` from the project root |
 | `bind: address already in use` for any of 8000 / 3000 / 9090 / 9093 | A previous run's leftover containers, or another system process holding the port | First: `docker compose down` to clean up. If still bound, find the culprit — `lsof -i :3000` (Linux/macOS) or `netstat -ano \| findstr :3000` (Windows). To remap without editing YAML: set the matching variable in `.env` (e.g. `GRAFANA_PORT=3001`) and re-run `docker compose up -d`. |
 | Smoke test says "missing http_requests_total" but `/health` works | Race during registry warm-up, or the middleware didn't register (stale image) | The smoke test now auto-retries once after 2 seconds and dumps `/metrics` preview + container status + app logs on failure — read that output first. If still failing after retry, the cause is almost certainly a stale image: `docker compose down && docker compose up -d --build app`. |
+| `make load` fails with `ModuleNotFoundError: No module named 'httpx'` on the host | The script ran on the host Python instead of inside the container, where httpx is bundled | `make load` runs the script inside the FastAPI container via `docker compose exec` — no host Python deps needed. If you instead invoked `python3 scripts/generate_traffic.py ...` directly, either activate the project's venv (`pip install -r requirements.txt`) or switch to `make load`. |
 | Stack fails to start mid-way (some containers `Exit 1`) | One container can't bind its port; another service depends on it | `docker compose ps` shows which service failed; `docker compose logs <service>` for details. Then `docker compose down` and remap the conflicting port in `.env`. |
 | `docker compose up` hangs on prometheus | Volume permission issue | `docker compose down -v && docker compose up -d` |
 | `process_open_fds` missing on macOS | macOS has no `RLIMIT_NOFILE` | Expected; not a bug, but the metric is unavailable on macOS Docker Desktop |

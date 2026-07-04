@@ -14,6 +14,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY app/ ./app/
 
+# Copy the traffic generator script so it can be invoked via
+# `docker compose exec app python /code/scripts/generate_traffic.py ...`
+# from the host without needing a local Python install or venv.
+COPY scripts/ ./scripts/
+
 # Expose port
 EXPOSE 8000
 

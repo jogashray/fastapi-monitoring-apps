@@ -18,9 +18,13 @@ htmlcov
 *.log
 README.md
 tests/
-scripts/
 data/
 prometheus_data/
 grafana_data/
 *.md
 !requirements.txt
+
+# NOTE: scripts/ is intentionally NOT excluded — `generate_traffic.py`
+# is bundled into the FastAPI image so `make load` can run via
+# `docker compose exec app python /code/scripts/generate_traffic.py ...`
+# without requiring httpx to be installed on the host.
