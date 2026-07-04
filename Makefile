@@ -1,3 +1,9 @@
+# Compose binary — defaults to the v2 plugin (`docker compose`, no hyphen).
+# Override on machines that only have the legacy v1 binary:
+#   make up COMPOSE=docker-compose
+#   make load COMPOSE=docker-compose
+COMPOSE ?= docker compose
+
 .PHONY: install run test up down logs smoke load clean
 
 install:
@@ -10,7 +16,7 @@ test:
 	pytest -v
 
 up:
-	docker-compose up -d --build
+	$(COMPOSE) up -d --build
 	@echo "Services starting..."
 	@echo "App:        http://localhost:8000"
 	@echo "Prometheus: http://localhost:9090"
@@ -18,10 +24,10 @@ up:
 	@echo "Alertmgr:   http://localhost:9093"
 
 down:
-	docker-compose down
+	$(COMPOSE) down
 
 logs:
-	docker-compose logs -f
+	$(COMPOSE) logs -f
 
 smoke:
 	bash scripts/smoke_test.sh
@@ -32,7 +38,7 @@ smoke:
 # with ~5% error rate.
 # Override:  make load COUNT=2000 CONCURRENCY=8
 load:
-	docker-compose exec -T app python /code/scripts/generate_traffic.py \
+	$(COMPOSE) exec -T app python /code/scripts/generate_traffic.py \
 		--count $(or $(COUNT),1500) \
 		--concurrency $(or $(CONCURRENCY),4) \
 		--base-url http://localhost:8000

@@ -830,7 +830,8 @@ This is a single-process monitoring example, **not a hardened production system*
 
 | Symptom | Likely Cause | Fix |
 |---------|--------------|-----|
-| `bash: docker-compose: command not found` | Device only has Compose v2 (`docker compose`, no hyphen) | Use `docker compose ...` instead; or install the `docker-compose-plugin` |
+| `bash: docker-compose: command not found` | Device only has Compose v2 (`docker compose`, no hyphen) | The Makefile targets (`make up`, `make down`, `make load`, etc.) require v2. Install the `docker-compose-plugin` package, or use the long-form `docker compose` for any direct commands. |
+| `make load` / `make up`: `Permission denied` on `docker-compose` | The v1 binary exists but isn't executable by your user (or isn't on PATH from `make`'s environment) | The Makefile uses Compose v2 (`docker compose`, no hyphen) — you should be on a 2020+ Docker install. Check `docker compose version` works in your shell. If you only have the v1 binary, prefix the command: `make load COMPOSE=docker-compose` (after also setting the same override for `up`/`down`). |
 | `curl /health` returns 502/connection refused | App container not started | `docker compose ps` (or `docker-compose ps`), check logs: `docker compose logs app` |
 | `GET /metrics` is empty | Lifespan never started the collector | Restart the container; verify `SYSTEM_METRICS_INTERVAL` is valid |
 | Grafana shows "No data" | Prometheus not scraping | Open `:9090/targets`, ensure `app:8000` is `UP` |
