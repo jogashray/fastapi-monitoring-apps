@@ -48,7 +48,33 @@ from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Iterable, Tuple
 
-import httpx
+try:
+    import httpx
+except ImportError:
+    # The script is meant to run INSIDE the FastAPI container, where httpx
+    # is already installed via requirements.txt. If you see this error,
+    # you're trying to run it on the host. Use `make load` (which runs it
+    # in the container via `docker compose exec`) instead.
+    sys.stderr.write(
+        "\n"
+        "generate_traffic.py: ModuleNotFoundError: No module named 'httpx'\n"
+        "\n"
+        "This script is meant to run inside the FastAPI container, where\n"
+        "httpx is pre-installed. From your host, run it with:\n"
+        "\n"
+        "    make load\n"
+        "    # or\n"
+        "    make load COUNT=2000 CONCURRENCY=8\n"
+        "\n"
+        "If you really want to run it on the host (advanced):\n"
+        "\n"
+        "    python3 -m venv .venv\n"
+        "    source .venv/bin/activate\n"
+        "    pip install -r requirements.txt\n"
+        "    python3 scripts/generate_traffic.py --count 1500\n"
+        "\n"
+    )
+    sys.exit(2)
 
 
 # ---------------------------------------------------------------------------
